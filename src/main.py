@@ -6,8 +6,25 @@ mp_draw  = mp.solutions.drawing_utils
 
 cap = cv2.VideoCapture(0)
 
-def lhand(conta2, conta3, conta4, conta5):
-    number = 0
+def lhand(conta1, conta2, conta3, conta4, conta5, number = 0):
+
+    if abs(conta1)>=0.15:
+        number+=1
+    if conta2>=0.15:
+        number+=1
+    if conta3>=0.20:
+        number+=1
+    if conta4>=0.18:
+        number+=1
+    if conta5>=0.09:
+        number+=1
+
+    return number
+
+def rhand(conta1, conta2, conta3, conta4, conta5, number = 0):
+    
+    if abs(conta1)>=0.15:
+        number+=1
     if conta2>=0.15:
         number+=1
     if conta3>=0.20:
@@ -21,7 +38,7 @@ def lhand(conta2, conta3, conta4, conta5):
 
 with mp_hands.Hands(
     static_image_mode=False,
-    max_num_hands=1,
+    max_num_hands=2,
     model_complexity=1,
     min_detection_confidence=0.6,
     min_tracking_confidence=0.6
@@ -38,15 +55,29 @@ with mp_hands.Hands(
         results = hands.process(rgb)
 
         if results.multi_hand_landmarks:
-            for hand_lms in results.multi_hand_landmarks:
+            for i, hand_lms in enumerate(results.multi_hand_landmarks):
+                hand_label = results.multi_handedness[i].classification[0].label
 
-                conta2 = hand_lms.landmark[5].y - hand_lms.landmark[8].y
-                conta3 = hand_lms.landmark[9].y - hand_lms.landmark[12].y
-                conta4 = hand_lms.landmark[13].y - hand_lms.landmark[16].y
-                conta5 = hand_lms.landmark[17].y - hand_lms.landmark[20].y
+                if hand_label == 'Left':
+                    conta1 = hand_lms.landmark[4].x - hand_lms.landmark[9].x
+                    conta2 = hand_lms.landmark[5].y - hand_lms.landmark[8].y
+                    conta3 = hand_lms.landmark[9].y - hand_lms.landmark[12].y
+                    conta4 = hand_lms.landmark[13].y - hand_lms.landmark[16].y
+                    conta5 = hand_lms.landmark[17].y - hand_lms.landmark[20].y
+                    lresult = lhand(conta1, conta2, conta3, conta4, conta5)
 
-                result = lhand(conta2, conta3, conta4, conta5)
-                cv2.putText(frame, str(result), (10, 30),
+
+                if hand_label == 'Right':
+                    conta1 = hand_lms.landmark[4].x - hand_lms.landmark[9].x
+                    conta2 = hand_lms.landmark[5].y - hand_lms.landmark[8].y
+                    conta3 = hand_lms.landmark[9].y - hand_lms.landmark[12].y
+                    conta4 = hand_lms.landmark[13].y - hand_lms.landmark[16].y
+                    conta5 = hand_lms.landmark[17].y - hand_lms.landmark[20].y
+                    rresult = rhand(conta1, conta2, conta3, conta4, conta5)
+                    print(rresult)
+
+
+                cv2.putText(frame, str(lresult), (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX,
                     1,
                     (255, 255, 255),
